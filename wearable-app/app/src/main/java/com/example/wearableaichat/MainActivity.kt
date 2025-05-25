@@ -1,5 +1,6 @@
 package com.example.wearableaichat
 
+import android.os.Bundle
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -19,10 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.wear.compose.material.*
 import com.example.wearableaichat.network.ChatRequest
@@ -40,7 +39,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WearApp(apiService = apiService, lifecycleScope = lifecycleScope)
+            // Pass the activity's lifecycleScope to WearApp, which will then pass it to ChatScreen
+            WearApp(apiService = apiService, coroutineScope = lifecycleScope)
         }
     }
 
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun WearApp(apiService: com.example.wearableaichat.network.ApiService, lifecycleScope: CoroutineScope) {
+fun WearApp(apiService: com.example.wearableaichat.network.ApiService, coroutineScope: CoroutineScope) {
     WearableAiChatTheme {
         val listState = rememberScalingLazyListState()
         Scaffold(
@@ -58,7 +58,7 @@ fun WearApp(apiService: com.example.wearableaichat.network.ApiService, lifecycle
         ) {
             ChatScreen(
                 apiService = apiService,
-                lifecycleScope = lifecycleScope,
+                coroutineScope = coroutineScope, // Pass the coroutineScope here
                 listState = listState
             )
         }
@@ -68,7 +68,7 @@ fun WearApp(apiService: com.example.wearableaichat.network.ApiService, lifecycle
 @Composable
 fun ChatScreen(
     apiService: com.example.wearableaichat.network.ApiService,
-    lifecycleScope: CoroutineScope,
+    coroutineScope: CoroutineScope, // Changed parameter type
     listState: ScalingLazyListState
 ) {
     // Holds the list of messages displayed in the chat.
@@ -88,10 +88,6 @@ fun ChatScreen(
     val stringAiPrefix = stringResource(id = R.string.ai_prefix)
     val stringUserPrefix = stringResource(id = R.string.user_prefix)
 
-    // Hoist the strings that will be used in the ttsListener
-    val errorTtsLangNotSupported = stringResource(id = R.string.error_tts_language_not_supported)
-    val errorTtsInitFailed = stringResource(id = R.string.error_tts_init_failed)
-
     // Listener for TextToSpeech engine initialization.
     val ttsListener = TextToSpeech.OnInitListener { status ->
         if (status == TextToSpeech.SUCCESS) {
@@ -100,14 +96,14 @@ fun ChatScreen(
             // Check if the language is available and supported.
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS", "TTS Language not supported.")
-                messages.add(stringAiPrefix + errorTtsLangNotSupported)
+                messages.add(stringAiPrefix + stringResource(id = R.string.error_tts_language_not_supported))
             } else {
                 ttsInitialized = true // TTS is ready to use.
                 Log.i("TTS", "TTS Initialization successful.")
             }
         } else {
             Log.e("TTS", "TTS Initialization failed.")
-            messages.add(stringAiPrefix + errorTtsInitFailed)
+            messages.add(stringAiPrefix + stringResource(id = R.string.error_tts_init_failed))
         }
     }
 
@@ -147,17 +143,6 @@ fun ChatScreen(
         }
     }
 
-    val infoThinkingStrRes = stringResource(id = R.string.info_thinking)
-    val errorAsrUnavailableStrRes = stringResource(id = R.string.error_asr_unavailable)
-    val errorAsrNotRecognizedStrRes = stringResource(id = R.string.error_asr_not_recognized)
-    val errorAsrFailedCancelledStrRes = stringResource(id = R.string.error_asr_failed_cancelled)
-    val errorNetworkGenericStrRes = stringResource(id = R.string.error_network_generic)
-    val errorServerHttpErrorPrefixStrRes = stringResource(id = R.string.error_server_http_error_prefix)
-    val errorServerEmptyResponseStrRes = stringResource(id = R.string.error_server_empty_response)
-    val errorServerMalformedResponseStrRes = stringResource(id = R.string.error_server_malformed_response)
-    val errorServerUnreachableStrRes = stringResource(id = R.string.error_server_unreachable)
-
-
     // ActivityResultLauncher for handling results from the speech recognition intent.
     val speechRecognizerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -171,12 +156,12 @@ fun ChatScreen(
                 messages.add(stringUserPrefix + recognizedText) // Add user's message to chat.
 
                 // Show "Thinking..." message and initiate network request.
-                val thinkingMessage = stringAiPrefix + infoThinkingStrRes
+                val thinkingMessage = stringAiPrefix + stringResource(id = R.string.info_thinking)
                 messages.add(thinkingMessage)
                 isNetworkRequestInProgress = true // Disable mic button.
 
                 // Launch a coroutine to handle the network request.
-                lifecycleScope.launch {
+                coroutineScope.launch { // Changed to use coroutineScope
                     try {
                         val response = apiService.sendMessage(ChatRequest(recognizedText))
                         messages.remove(thinkingMessage) // Remove "Thinking..." message.
@@ -191,25 +176,25 @@ fun ChatScreen(
                                     speak(aiResponseText) // Speak the AI's response.
                                 } else if (chatResponse.error != null) {
                                     // Backend returned an error (e.g., "No message provided").
-                                    messages.add(stringAiPrefix + errorServerHttpErrorPrefixStrRes + chatResponse.error)
+                                    messages.add(stringAiPrefix + stringResource(id = R.string.error_server_http_error_prefix) + chatResponse.error)
                                 } else {
                                     // Backend response was successful but empty/malformed.
-                                    messages.add(stringAiPrefix + errorServerEmptyResponseStrRes)
+                                    messages.add(stringAiPrefix + stringResource(id = R.string.error_server_empty_response))
                                 }
                             } else {
                                 // Response body was null, indicating a malformed response from server.
-                                messages.add(stringAiPrefix + errorServerMalformedResponseStrRes)
+                                messages.add(stringAiPrefix + stringResource(id = R.string.error_server_malformed_response))
                             }
                         } else {
                             // HTTP error (e.g., 404, 500).
-                            messages.add(stringAiPrefix + errorServerHttpErrorPrefixStrRes + "${response.code()} ${response.message()}")
+                            messages.add(stringAiPrefix + stringResource(id = R.string.error_server_http_error_prefix) + "${response.code()} ${response.message()}")
                         }
                     } catch (e: Exception) {
                         // Handle network exceptions (e.g., no internet, server unreachable).
                         messages.remove(thinkingMessage) // Ensure "Thinking..." is removed on error.
                         val errorMessage = when (e) {
-                            is UnknownHostException, is ConnectException -> stringAiPrefix + errorServerUnreachableStrRes
-                            else -> stringAiPrefix + errorNetworkGenericStrRes + " (${e.message})"
+                            is UnknownHostException, is ConnectException -> stringAiPrefix + stringResource(id = R.string.error_server_unreachable)
+                            else -> stringAiPrefix + stringResource(id = R.string.error_network_generic) + " (${e.message})"
                         }
                         messages.add(errorMessage)
                         Log.e("ChatScreen", "Network request failed", e)
@@ -219,11 +204,11 @@ fun ChatScreen(
                 }
             } else {
                 // Speech recognized, but no results (should be rare).
-                messages.add(stringAiPrefix + errorAsrNotRecognizedStrRes)
+                messages.add(stringAiPrefix + stringResource(id = R.string.error_asr_not_recognized))
             }
         } else {
             // Speech recognition failed or was cancelled by the user.
-            messages.add(stringAiPrefix + errorAsrFailedCancelledStrRes)
+            messages.add(stringAiPrefix + stringResource(id = R.string.error_asr_failed_cancelled))
         }
     }
 
@@ -267,12 +252,12 @@ fun ChatScreen(
                     val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                         putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                         putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-                        putExtra(RecognizerIntent.EXTRA_PROMPT, infoThinkingStrRes) // Re-use "Thinking..." or a dedicated prompt
+                        putExtra(RecognizerIntent.EXTRA_PROMPT, stringResource(id = R.string.info_thinking)) // Re-use "Thinking..." or a dedicated prompt
                     }
                     try {
                         speechRecognizerLauncher.launch(intent)
                     } catch (e: Exception) {
-                        messages.add(stringAiPrefix + errorAsrUnavailableStrRes)
+                        messages.add(stringAiPrefix + stringResource(id = R.string.error_asr_unavailable))
                         Log.e("ChatScreen", "Speech recognition not available", e)
                     }
                 },
@@ -331,7 +316,7 @@ fun DefaultPreview() {
         ) {
             ChatScreen(
                 apiService = mockApiService,
-                lifecycleScope = previewCoroutineScope, // Use the preview scope
+                coroutineScope = previewCoroutineScope, // Changed to coroutineScope
                 listState = listState
             )
         }
