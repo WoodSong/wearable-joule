@@ -31,6 +31,8 @@ import kotlinx.coroutines.launch
 import java.net.ConnectException
 import java.net.UnknownHostException
 import java.util.Locale
+import androidx.wear.compose.material.Colors // Import Colors
+import kotlinx.coroutines.CoroutineScope // Import CoroutineScope
 
 class MainActivity : ComponentActivity() {
     private val apiService by lazy { RetrofitClient.instance }
@@ -46,7 +48,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun WearApp(apiService: com.example.wearableaichat.network.ApiService, lifecycleScope: LifecycleCoroutineScope) {
+fun WearApp(apiService: com.example.wearableaichat.network.ApiService, lifecycleScope: CoroutineScope) {
     WearableAiChatTheme {
         val listState = rememberScalingLazyListState()
         Scaffold(
@@ -66,7 +68,7 @@ fun WearApp(apiService: com.example.wearableaichat.network.ApiService, lifecycle
 @Composable
 fun ChatScreen(
     apiService: com.example.wearableaichat.network.ApiService,
-    lifecycleScope: LifecycleCoroutineScope,
+    lifecycleScope: CoroutineScope,
     listState: ScalingLazyListState
 ) {
     // Holds the list of messages displayed in the chat.
@@ -291,7 +293,7 @@ fun WearableAiChatTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = wearColorScheme(
+        colors = Colors(
             primary = androidx.compose.ui.graphics.Color.Cyan,
             background = androidx.compose.ui.graphics.Color.Black,
             onPrimary = androidx.compose.ui.graphics.Color.Black,
