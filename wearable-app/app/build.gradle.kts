@@ -56,7 +56,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
 
     // Wear Compose specific
-    implementation("androidx.wear.compose:compose-material:1.3.0")
+    implementation("androidx.wear.compose:compose-material:1.4.1")
     implementation("androidx.wear.compose:compose-foundation:1.3.0")
 
     // For icons if needed (e.g. microphone)
