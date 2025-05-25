@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.WearableAiChat" parent="@android:style/Theme.DeviceDefault">
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:colorPrimary">@color/primary</item>
+    </style>
+</resources>

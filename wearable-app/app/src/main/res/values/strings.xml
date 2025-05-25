@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WearableAiChat</string>
+
+    <!-- Chat Screen Messages -->
+    <string name="ai_prefix">AI: </string>
+    <string name="user_prefix">User: </string>
+
+    <string name="message_initial_prompt">Tap the mic to start chatting!</string>
+
+    <!-- ASR (Voice Input) Errors -->
+    <string name="error_asr_not_recognized">I didn\'t catch that. Please try again.</string>
+    <string name="error_asr_failed_cancelled">Speech input failed or was cancelled.</string>
+    <string name="error_asr_unavailable">Speech input not available on this device.</string>
+
+    <!-- Network Communication Errors -->
+    <string name="info_thinking">Thinking...</string>
+    <string name="error_network_generic">Network error. Please try again.</string>
+    <string name="error_server_unreachable">Cannot reach server. Check connection.</string>
+    <string name="error_server_empty_response">Empty response from server.</string>
+    <string name="error_server_malformed_response">Unexpected response from server.</string>
+    <string name="error_server_http_error_prefix">Server error: </string> <!-- Appended with HTTP code and message -->
+
+    <!-- TTS Errors -->
+    <string name="error_tts_language_not_supported">TTS language not supported.</string>
+    <string name="error_tts_init_failed">TTS initialization failed.</string>
+    <string name="error_tts_speak_failed">Cannot speak right now.</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_voice_input_button">Voice input</string>
+</resources>
