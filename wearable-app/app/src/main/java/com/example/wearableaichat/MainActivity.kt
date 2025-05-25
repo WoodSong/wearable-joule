@@ -24,14 +24,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.wear.compose.material.*
-import androidx.wear.compose.material.Colors // Import Colors
 import com.example.wearableaichat.network.ChatRequest
 import com.example.wearableaichat.network.RetrofitClient
-import kotlinx.coroutines.CoroutineScope // Import CoroutineScope
 import kotlinx.coroutines.launch
 import java.net.ConnectException
 import java.net.UnknownHostException
 import java.util.Locale
+import androidx.wear.compose.material.Colors // Import Colors
+import kotlinx.coroutines.CoroutineScope // Import CoroutineScope
 
 class MainActivity : ComponentActivity() {
     private val apiService by lazy { RetrofitClient.instance }
@@ -278,7 +278,7 @@ fun WearableAiChatTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = Colors( // Changed from wearColorScheme to Colors
+        colors = Colors(
             primary = androidx.compose.ui.graphics.Color.Cyan,
             background = androidx.compose.ui.graphics.Color.Black,
             onPrimary = androidx.compose.ui.graphics.Color.Black,
