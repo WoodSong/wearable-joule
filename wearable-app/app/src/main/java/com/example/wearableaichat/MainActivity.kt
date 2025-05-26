@@ -258,16 +258,16 @@ fun ChatScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 items(messages.size) { index ->
-//                    MarkdownTelText(
-//                        markdownText = messages[index],
-//                        modifier = Modifier.fillMaxSize().padding(4.dp, 2.dp, 4.dp, 2.dp) // Padding for each message`
-//                    )
-                    androidx.wear.compose.material.Text(
-                        text = messages[index],
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                    MarkdownTelText(
+                        markdownText = messages[index],
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp) // Padding for each message`
                     )
+//                    androidx.wear.compose.material.Text(
+//                        text = messages[index],
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(vertical = 4.dp)
+//                    )
                 }
             }
         }
@@ -323,62 +323,62 @@ fun WearableAiChatTheme(
     )
 }
 
-//@Composable
-//fun MarkdownTelText(markdownText: String, modifier: Modifier = Modifier) {
-//    val context = LocalContext.current
-//    val annotatedString = buildAnnotatedString {
-//        val regex = """\[([^\]]*)\]\((tel:[0-9]+)\)""".toRegex()
-//        var lastIndex = 0
-//
-//        regex.findAll(markdownText).forEach { matchResult ->
-//            Log.e("MarkdownTelText", "Match found: ${matchResult.value}")
-//            val (displayText, rawUrl) = matchResult.destructured // rawUrl 可能包含末尾的 ')'
-//            val startIndex = matchResult.range.first
-//            val endIndex = matchResult.range.last + 1
-//
-//            // 添加非链接部分
-//            if (startIndex > lastIndex) {
-//                append(markdownText.substring(lastIndex, startIndex))
-//            }
-//            val url = rawUrl
-//
-//            // 添加链接部分
-//            pushStringAnnotation(tag = "tel", annotation = url)
-//            withStyle(style = SpanStyle(color = MaterialTheme.colors.primary, textDecoration = TextDecoration.Underline)) {
-//                append(displayText)
-//            }
-//            pop() // 弹出 annotation
-//            lastIndex = endIndex
-//        }
-//
-//        // 添加剩余文本
-//        if (lastIndex < markdownText.length) {
-//            append(markdownText.substring(lastIndex, markdownText.length))
-//        }
-//    }
-//
-//    Log.e("MarkdownTelText", "Annotated string created: $annotatedString")
-//
-//    ClickableText(
-//        text = annotatedString,
-//        modifier = modifier,
-//        onClick = { offset ->
-//            annotatedString.getStringAnnotations(tag = "tel", start = offset, end = offset)
-//                .firstOrNull()?.let { annotation ->
-//                    val telUri = annotation.item
-//                    if (telUri.startsWith("tel:")) {
-//                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse(telUri))
-//                        // 确保应用程序有拨打电话的权限：
-//                        // 在 AndroidManifest.xml 中添加：
-//                        // <uses-permission android:name="android.permission.CALL_PHONE" />
-//                        // 注意：ACTION_DIAL 不需要 CALL_PHONE 权限，它只是打开拨号界面。
-//                        // 如果是 ACTION_CALL，则需要。
-//                        context.startActivity(intent)
-//                    }
-//                }
-//        }
-//    )
-//}
+@Composable
+fun MarkdownTelText(markdownText: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val annotatedString = buildAnnotatedString {
+        val regex = """\[([^\]]*)\]\((tel:[0-9]+)\)""".toRegex()
+        var lastIndex = 0
+
+        regex.findAll(markdownText).forEach { matchResult ->
+            Log.e("MarkdownTelText", "Match found: ${matchResult.value}")
+            val (displayText, rawUrl) = matchResult.destructured // rawUrl 可能包含末尾的 ')'
+            val startIndex = matchResult.range.first
+            val endIndex = matchResult.range.last + 1
+
+            // 添加非链接部分
+            if (startIndex > lastIndex) {
+                append(markdownText.substring(lastIndex, startIndex))
+            }
+            val url = rawUrl
+
+            // 添加链接部分
+            pushStringAnnotation(tag = "tel", annotation = url)
+            withStyle(style = SpanStyle(color = MaterialTheme.colors.primary, textDecoration = TextDecoration.Underline)) {
+                append(displayText)
+            }
+            pop() // 弹出 annotation
+            lastIndex = endIndex
+        }
+
+        // 添加剩余文本
+        if (lastIndex < markdownText.length) {
+            append(markdownText.substring(lastIndex, markdownText.length))
+        }
+    }
+
+    Log.e("MarkdownTelText", "Annotated string created: $annotatedString")
+
+    ClickableText(
+        text = annotatedString,
+        modifier = modifier,
+        onClick = { offset ->
+            annotatedString.getStringAnnotations(tag = "tel", start = offset, end = offset)
+                .firstOrNull()?.let { annotation ->
+                    val telUri = annotation.item
+                    if (telUri.startsWith("tel:")) {
+                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse(telUri))
+                        // 确保应用程序有拨打电话的权限：
+                        // 在 AndroidManifest.xml 中添加：
+                        // <uses-permission android:name="android.permission.CALL_PHONE" />
+                        // 注意：ACTION_DIAL 不需要 CALL_PHONE 权限，它只是打开拨号界面。
+                        // 如果是 ACTION_CALL，则需要。
+                        context.startActivity(intent)
+                    }
+                }
+        }
+    )
+}
 
 @Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
