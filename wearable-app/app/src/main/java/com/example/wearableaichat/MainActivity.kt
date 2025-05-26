@@ -44,6 +44,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
+import java.net.URLEncoder
 
 class MainActivity : ComponentActivity() {
     private val apiService by lazy { RetrofitClient.instance }
@@ -327,12 +328,12 @@ fun WearableAiChatTheme(
 fun MarkdownTelText(markdownText: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val annotatedString = buildAnnotatedString {
-        val regex = """\[([^\]]*)\]\((tel:[0-9]+)\)""".toRegex()
+        val regex = """\[([^\]]*)\]\(((?:tel:[0-9]+)|(?:location:[^)]+))\)""".toRegex()
         var lastIndex = 0
 
         regex.findAll(markdownText).forEach { matchResult ->
             Log.e("MarkdownTelText", "Match found: ${matchResult.value}")
-            val (displayText, rawUrl) = matchResult.destructured // rawUrl 可能包含末尾的 ')'
+            val (displayText, rawUrl) = matchResult.destructured
             val startIndex = matchResult.range.first
             val endIndex = matchResult.range.last + 1
 
@@ -343,7 +344,7 @@ fun MarkdownTelText(markdownText: String, modifier: Modifier = Modifier) {
             val url = rawUrl
 
             // 添加链接部分
-            pushStringAnnotation(tag = "tel", annotation = url)
+            pushStringAnnotation(tag = "url", annotation = url) // Changed tag to "url"
             withStyle(style = SpanStyle(color = MaterialTheme.colors.primary, textDecoration = TextDecoration.Underline)) {
                 append(displayText)
             }
@@ -363,17 +364,25 @@ fun MarkdownTelText(markdownText: String, modifier: Modifier = Modifier) {
         text = annotatedString,
         modifier = modifier,
         onClick = { offset ->
-            annotatedString.getStringAnnotations(tag = "tel", start = offset, end = offset)
+            annotatedString.getStringAnnotations(tag = "url", start = offset, end = offset) // Changed tag to "url"
                 .firstOrNull()?.let { annotation ->
-                    val telUri = annotation.item
-                    if (telUri.startsWith("tel:")) {
-                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse(telUri))
-                        // 确保应用程序有拨打电话的权限：
-                        // 在 AndroidManifest.xml 中添加：
-                        // <uses-permission android:name="android.permission.CALL_PHONE" />
-                        // 注意：ACTION_DIAL 不需要 CALL_PHONE 权限，它只是打开拨号界面。
-                        // 如果是 ACTION_CALL，则需要。
+                    val uriString = annotation.item
+                    if (uriString.startsWith("tel:")) {
+                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse(uriString))
                         context.startActivity(intent)
+                    } else if (uriString.startsWith("location:")) {
+                        val address = uriString.substringAfter("location:").trim()
+                        if (address.isNotEmpty()) {
+                            try {
+                                val encodedAddress = URLEncoder.encode(address, "UTF-8")
+                                val geoUri = Uri.parse("geo:0,0?q=$encodedAddress")
+                                val intent = Intent(Intent.ACTION_VIEW, geoUri)
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                Log.e("MarkdownTelText", "Error encoding or launching location intent: $e")
+                                // Optionally, show a toast or message to the user
+                            }
+                        }
                     }
                 }
         }
@@ -389,7 +398,7 @@ fun DefaultPreview() {
             // Simulate a delay and response
             kotlinx.coroutines.delay(1000)
 //            val replyContent = "Hello from preview!"
-            val replyContent = "name: Andy Wang | tel1: [12345678901](tel:12345678901) ｜ tel2: [9876543210](tel:9876543210)"
+            val replyContent = "name: Andy Wang | tel1: [12345678901](tel:12345678901) ｜ tel2: [9876543210](tel:9876543210) | location: [Company HQ](location: 1600 Amphitheatre Parkway, Mountain View, CA)"
             return retrofit2.Response.success(com.example.wearableaichat.network.ChatResponse(replyContent, null))
         }
     }

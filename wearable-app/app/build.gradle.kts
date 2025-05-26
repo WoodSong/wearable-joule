@@ -84,6 +84,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1") // Added for Intent testing
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0")
 }
