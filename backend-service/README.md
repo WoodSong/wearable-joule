@@ -1,6 +1,6 @@
 # Backend AI Chat Box (Echo Service)
 
-This is a simple Flask-based backend service designed for the "Wearable AI Chat" Android Wear OS application. Its primary function is to act as an **echo service**: it receives a message from the Wear OS app and returns the same message prefixed with "Echo: ".
+This is a simple Flask-based backend service designed for the "Wearable AI Chat" Android Wear OS application. For demonstration, if message from the Wear OS app contains "manager", return a response as "name: John Smith | tel: [12345678901](tel:12345678901)"; if message contains "customer", return a response as "name: Mary Davis | location: [Company HQ](location: 1600 Amphitheatre Parkway, Mountain View, CA)"; otherwise returns the same message prefixed with "Echo: ". 
 
 This service helps demonstrate the end-to-end functionality of the chat application, including network requests and responses, without requiring complex AI integration on the backend.
 

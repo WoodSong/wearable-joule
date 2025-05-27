@@ -2,6 +2,7 @@ package com.example.wearableaichat
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
@@ -12,40 +13,31 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import androidx.wear.compose.material.*
 import com.example.wearableaichat.network.ChatRequest
 import com.example.wearableaichat.network.RetrofitClient
 import kotlinx.coroutines.launch
 import java.net.ConnectException
+import java.net.URLEncoder
 import java.net.UnknownHostException
 import java.util.Locale
-import androidx.wear.compose.material.Colors // Import Colors
-import kotlinx.coroutines.CoroutineScope // Import CoroutineScope
-import androidx.compose.ui.tooling.preview.Devices
-import android.net.Uri
-import androidx.compose.material.Text
-import androidx.compose.runtime.remember
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.sp
-import java.net.URLEncoder
 
 class MainActivity : ComponentActivity() {
     private val apiService by lazy { RetrofitClient.instance }
@@ -53,8 +45,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Pass the activity's lifecycleScope to WearApp, which will then pass it to ChatScreen
-            WearApp(apiService = apiService, coroutineScope = lifecycleScope)
+            WearApp(apiService = apiService)
         }
     }
 
@@ -62,7 +53,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun WearApp(apiService: com.example.wearableaichat.network.ApiService, coroutineScope: CoroutineScope) {
+fun WearApp(
+    apiService: com.example.wearableaichat.network.ApiService,
+) {
     WearableAiChatTheme {
         val listState = rememberScalingLazyListState()
         Scaffold(
@@ -72,7 +65,6 @@ fun WearApp(apiService: com.example.wearableaichat.network.ApiService, coroutine
         ) {
             ChatScreen(
                 apiService = apiService,
-                coroutineScope = coroutineScope, // Pass the coroutineScope here
                 listState = listState
             )
         }
@@ -82,7 +74,6 @@ fun WearApp(apiService: com.example.wearableaichat.network.ApiService, coroutine
 @Composable
 fun ChatScreen(
     apiService: com.example.wearableaichat.network.ApiService,
-    coroutineScope: CoroutineScope, // Changed parameter type
     listState: ScalingLazyListState
 ) {
     // Holds the list of messages displayed in the chat.
@@ -113,11 +104,11 @@ fun ChatScreen(
             val result = tts?.setLanguage(Locale.getDefault())
             // Check if the language is available and supported.
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e("TTS", "TTS Language not supported.")
+                Log.w("TTS", "TTS Language not supported.")
                 messages.add(stringAiPrefix + errorTtsLangNotSupported)
             } else {
                 ttsInitialized = true // TTS is ready to use.
-                Log.i("TTS", "TTS Initialization successful.")
+                Log.d("TTS", "TTS Initialization successful.")
             }
         } else {
             Log.e("TTS", "TTS Initialization failed.")
@@ -166,9 +157,11 @@ fun ChatScreen(
     val errorAsrNotRecognizedStrRes = stringResource(id = R.string.error_asr_not_recognized)
     val errorAsrFailedCancelledStrRes = stringResource(id = R.string.error_asr_failed_cancelled)
     val errorNetworkGenericStrRes = stringResource(id = R.string.error_network_generic)
-    val errorServerHttpErrorPrefixStrRes = stringResource(id = R.string.error_server_http_error_prefix)
+    val errorServerHttpErrorPrefixStrRes =
+        stringResource(id = R.string.error_server_http_error_prefix)
     val errorServerEmptyResponseStrRes = stringResource(id = R.string.error_server_empty_response)
-    val errorServerMalformedResponseStrRes = stringResource(id = R.string.error_server_malformed_response)
+    val errorServerMalformedResponseStrRes =
+        stringResource(id = R.string.error_server_malformed_response)
     val errorServerUnreachableStrRes = stringResource(id = R.string.error_server_unreachable)
 
     // ActivityResultLauncher for handling results from the speech recognition intent.
@@ -179,6 +172,7 @@ fun ChatScreen(
             val data: Intent? = result.data
             // Extract recognized speech.
             val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            Log.d("ChatScreen", "Speech recognition results: $results")
             if (!results.isNullOrEmpty()) {
                 val recognizedText = results[0]
                 messages.add(stringUserPrefix + recognizedText) // Add user's message to chat.
@@ -249,20 +243,30 @@ fun ChatScreen(
                     .fillMaxSize()
                     .padding(16.dp),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Left, color = Color.Gray)
+                style = MaterialTheme.typography.body1.copy(
+                    textAlign = TextAlign.Left,
+                    color = Color.Gray
+                )
             )
         } else {
             // Display the conversation history.
             ScalingLazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = listState,
-                contentPadding = PaddingValues(top = 20.dp, bottom = 70.dp, start = 8.dp, end = 8.dp), // Increased bottom padding
+                contentPadding = PaddingValues(
+                    top = 20.dp,
+                    bottom = 70.dp,
+                    start = 8.dp,
+                    end = 8.dp
+                ), // Increased bottom padding
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 items(messages.size) { index ->
                     MarkdownTelText(
                         markdownText = messages[index],
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), // Padding for each message`
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp), // Padding for each message`
                     )
 //                    androidx.wear.compose.material.Text(
 //                        text = messages[index],
@@ -282,9 +286,15 @@ fun ChatScreen(
             Button(
                 onClick = {
                     val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        putExtra(
+                            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                        )
                         putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-                        putExtra(RecognizerIntent.EXTRA_PROMPT, infoThinkingStrRes) // Re-use "Thinking..." or a dedicated prompt
+                        putExtra(
+                            RecognizerIntent.EXTRA_PROMPT,
+                            infoThinkingStrRes
+                        ) // Re-use "Thinking..." or a dedicated prompt
                     }
                     try {
                         speechRecognizerLauncher.launch(intent)
@@ -333,39 +343,45 @@ fun MarkdownTelText(markdownText: String, modifier: Modifier = Modifier) {
         var lastIndex = 0
 
         regex.findAll(markdownText).forEach { matchResult ->
-            Log.e("MarkdownTelText", "Match found: ${matchResult.value}")
+            Log.d("MarkdownTelText", "Match found: ${matchResult.value}")
             val (displayText, rawUrl) = matchResult.destructured
             val startIndex = matchResult.range.first
             val endIndex = matchResult.range.last + 1
 
-            // 添加非链接部分
             if (startIndex > lastIndex) {
                 append(markdownText.substring(lastIndex, startIndex))
             }
             val url = rawUrl
 
-            // 添加链接部分
             pushStringAnnotation(tag = "url", annotation = url) // Changed tag to "url"
-            withStyle(style = SpanStyle(color = MaterialTheme.colors.primary, textDecoration = TextDecoration.Underline)) {
+            withStyle(
+                style = SpanStyle(
+                    color = MaterialTheme.colors.primary,
+                    textDecoration = TextDecoration.Underline
+                )
+            ) {
                 append(displayText)
             }
-            pop() // 弹出 annotation
+            pop()
             lastIndex = endIndex
         }
 
-        // 添加剩余文本
         if (lastIndex < markdownText.length) {
             append(markdownText.substring(lastIndex, markdownText.length))
         }
     }
 
-    Log.e("MarkdownTelText", "Annotated string created: $annotatedString")
+    Log.d("MarkdownTelText", "Annotated string created: $annotatedString")
 
     ClickableText(
         text = annotatedString,
         modifier = modifier,
         onClick = { offset ->
-            annotatedString.getStringAnnotations(tag = "url", start = offset, end = offset) // Changed tag to "url"
+            annotatedString.getStringAnnotations(
+                tag = "url",
+                start = offset,
+                end = offset
+            ) // Changed tag to "url"
                 .firstOrNull()?.let { annotation ->
                     val uriString = annotation.item
                     if (uriString.startsWith("tel:")) {
@@ -380,14 +396,20 @@ fun MarkdownTelText(markdownText: String, modifier: Modifier = Modifier) {
                                 val intent = Intent(Intent.ACTION_VIEW, geoUri)
                                 context.startActivity(intent)
                             } catch (e: Exception) {
-                                Log.e("MarkdownTelText", "Error encoding or launching location intent: $e")
+                                Log.e(
+                                    "MarkdownTelText",
+                                    "Error encoding or launching location intent: $e"
+                                )
                                 // Optionally, show a toast or message to the user
                             }
                         }
                     }
                 }
         },
-        style = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Left, color = Color.LightGray) // Example: apply MaterialTheme typography
+        style = MaterialTheme.typography.body1.copy(
+            textAlign = TextAlign.Left,
+            color = Color.LightGray
+        ) // Example: apply MaterialTheme typography
     )
 }
 
@@ -400,12 +422,16 @@ fun DefaultPreview() {
             // Simulate a delay and response
             kotlinx.coroutines.delay(1000)
 //            val replyContent = "Hello from preview!"
-            val replyContent = "name: John Smith | tel1: [12345678901](tel:12345678901) ｜ tel2: [9876543210](tel:9876543210) | location: [Company HQ](location: 1600 Amphitheatre Parkway, Mountain View, CA)"
-            return retrofit2.Response.success(com.example.wearableaichat.network.ChatResponse(replyContent, null))
+            val replyContent =
+                "name: John Smith | tel1: [12345678901](tel:12345678901) ｜ tel2: [9876543210](tel:9876543210) | location: [Company HQ](location: 1600 Amphitheatre Parkway, Mountain View, CA)"
+            return retrofit2.Response.success(
+                com.example.wearableaichat.network.ChatResponse(
+                    replyContent,
+                    null
+                )
+            )
         }
     }
-    // A simple way to get a CoroutineScope for preview. In real app, use lifecycleScope.
-    val previewCoroutineScope = rememberCoroutineScope()
 
     WearableAiChatTheme {
         val listState = rememberScalingLazyListState()
@@ -416,7 +442,6 @@ fun DefaultPreview() {
         ) {
             ChatScreen(
                 apiService = mockApiService,
-                coroutineScope = previewCoroutineScope, // Changed to coroutineScope
                 listState = listState
             )
         }
