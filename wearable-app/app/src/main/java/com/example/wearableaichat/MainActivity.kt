@@ -36,7 +36,6 @@ import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Shapes
-import androidx.wear.compose.material.TextToSpeech
 import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.material.Typography
 import androidx.wear.compose.material.Vignette
@@ -252,7 +251,7 @@ fun ChatScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 70.dp), // Ensure content is above the button
+                    .padding(bottom = 50.dp), // Ensure content is above the button
                 contentAlignment = Alignment.Center
             ) {
                 MarkdownTelText(
