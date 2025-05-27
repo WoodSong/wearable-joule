@@ -9,7 +9,7 @@ import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.wearableaichat.ui.theme.WearableAiChatTheme // Assuming this is your theme
+//import com.example.wearableaichat.ui.theme.WearableAiChatTheme // Assuming this is your theme
 import org.hamcrest.CoreMatchers.allOf
 import org.junit.After
 import org.junit.Before

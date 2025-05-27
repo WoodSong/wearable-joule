@@ -40,6 +40,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -248,7 +249,7 @@ fun ChatScreen(
                     .fillMaxSize()
                     .padding(16.dp),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.body1
+                style = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Left, color = Color.Gray)
             )
         } else {
             // Display the conversation history.
@@ -261,7 +262,7 @@ fun ChatScreen(
                 items(messages.size) { index ->
                     MarkdownTelText(
                         markdownText = messages[index],
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp) // Padding for each message`
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), // Padding for each message`
                     )
 //                    androidx.wear.compose.material.Text(
 //                        text = messages[index],
@@ -385,7 +386,8 @@ fun MarkdownTelText(markdownText: String, modifier: Modifier = Modifier) {
                         }
                     }
                 }
-        }
+        },
+        style = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Left, color = Color.LightGray) // Example: apply MaterialTheme typography
     )
 }
 
@@ -398,7 +400,7 @@ fun DefaultPreview() {
             // Simulate a delay and response
             kotlinx.coroutines.delay(1000)
 //            val replyContent = "Hello from preview!"
-            val replyContent = "name: Andy Wang | tel1: [12345678901](tel:12345678901) ｜ tel2: [9876543210](tel:9876543210) | location: [Company HQ](location: 1600 Amphitheatre Parkway, Mountain View, CA)"
+            val replyContent = "name: John Smith | tel1: [12345678901](tel:12345678901) ｜ tel2: [9876543210](tel:9876543210) | location: [Company HQ](location: 1600 Amphitheatre Parkway, Mountain View, CA)"
             return retrofit2.Response.success(com.example.wearableaichat.network.ChatResponse(replyContent, null))
         }
     }

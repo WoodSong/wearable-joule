@@ -76,6 +76,7 @@ This is an Android Wear OS application that allows users to interact with a back
 *   **"Cannot reach server" / Network Errors:**
     *   Ensure the `backend-service` is running on your host machine.
     *   Verify the `BASE_URL` in `ApiService.kt` is correctly configured for your target (emulator vs. physical device on network).
+    *   If using emulator to access the backend as `http://127.0.0.1:port/`, run `adb -s <wearable_device_id> reverse tcp:port tcp:port` to forward ports via ADB.
     *   Check that your Wear OS device/emulator has network connectivity.
     *   Look at Logcat in Android Studio for detailed error messages (filter by your app's package name: `com.example.wearableaichat`).
 *   **No Speech Input / "Speech input not available":**
