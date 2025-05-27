@@ -30,7 +30,16 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.wear.compose.material.*
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.Colors
+import androidx.wear.compose.material.Icon
+import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.Scaffold
+import androidx.wear.compose.material.Shapes
+import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.material.Typography
+import androidx.wear.compose.material.Vignette
+import androidx.wear.compose.material.VignettePosition
 import com.example.wearableaichat.network.ChatRequest
 import com.example.wearableaichat.network.RetrofitClient
 import kotlinx.coroutines.launch
@@ -57,15 +66,12 @@ fun WearApp(
     apiService: com.example.wearableaichat.network.ApiService,
 ) {
     WearableAiChatTheme {
-        val listState = rememberScalingLazyListState()
         Scaffold(
-            timeText = { TimeText(modifier = Modifier.scrollAway(listState)) },
-            vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
-            positionIndicator = { PositionIndicator(scalingLazyListState = listState) }
+            timeText = { TimeText() },
+            vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) }
         ) {
             ChatScreen(
-                apiService = apiService,
-                listState = listState
+                apiService = apiService
             )
         }
     }
@@ -73,11 +79,10 @@ fun WearApp(
 
 @Composable
 fun ChatScreen(
-    apiService: com.example.wearableaichat.network.ApiService,
-    listState: ScalingLazyListState
+    apiService: com.example.wearableaichat.network.ApiService
 ) {
-    // Holds the list of messages displayed in the chat.
-    val messages = remember { mutableStateListOf<String>() }
+    // Holds the latest message displayed in the chat.
+    var messages by remember { mutableStateOf<String?>(null) }
     // Tracks if a network request is currently active (e.g., waiting for backend response).
     // Used to disable the microphone button to prevent concurrent requests.
     var isNetworkRequestInProgress by remember { mutableStateOf(false) }
@@ -105,14 +110,14 @@ fun ChatScreen(
             // Check if the language is available and supported.
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.w("TTS", "TTS Language not supported.")
-                messages.add(stringAiPrefix + errorTtsLangNotSupported)
+                messages = stringAiPrefix + errorTtsLangNotSupported
             } else {
                 ttsInitialized = true // TTS is ready to use.
                 Log.d("TTS", "TTS Initialization successful.")
             }
         } else {
             Log.e("TTS", "TTS Initialization failed.")
-            messages.add(stringAiPrefix + errorTtsInitFailed)
+            messages = stringAiPrefix + errorTtsInitFailed
         }
     }
 
@@ -145,13 +150,6 @@ fun ChatScreen(
         }
     }
 
-    // Effect to automatically scroll to the newest message when the messages list changes.
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
-        }
-    }
-
     val infoThinkingStrRes = stringResource(id = R.string.info_thinking)
     val errorAsrUnavailableStrRes = stringResource(id = R.string.error_asr_unavailable)
     val errorAsrNotRecognizedStrRes = stringResource(id = R.string.error_asr_not_recognized)
@@ -175,18 +173,18 @@ fun ChatScreen(
             Log.d("ChatScreen", "Speech recognition results: $results")
             if (!results.isNullOrEmpty()) {
                 val recognizedText = results[0]
-                messages.add(stringUserPrefix + recognizedText) // Add user's message to chat.
+                messages = stringUserPrefix + recognizedText // Add user's message to chat.
 
                 // Show "Thinking..." message and initiate network request.
                 val thinkingMessage = stringAiPrefix + infoThinkingStrRes
-                messages.add(thinkingMessage)
+                messages = thinkingMessage
                 isNetworkRequestInProgress = true // Disable mic button.
 
                 // Launch a coroutine to handle the network request.
                 coroutineScope.launch { // Changed to use coroutineScope
                     try {
                         val response = apiService.sendMessage(ChatRequest(recognizedText))
-                        messages.remove(thinkingMessage) // Remove "Thinking..." message.
+                        // messages.remove(thinkingMessage) // Remove "Thinking..." message. // Not needed anymore
 
                         if (response.isSuccessful) {
                             val chatResponse = response.body()
@@ -194,31 +192,31 @@ fun ChatScreen(
                                 if (chatResponse.response != null) {
                                     // AI successfully responded.
                                     val aiResponseText = stringAiPrefix + chatResponse.response
-                                    messages.add(aiResponseText)
+                                    messages = aiResponseText
                                     speak(aiResponseText) // Speak the AI's response.
                                 } else if (chatResponse.error != null) {
                                     // Backend returned an error (e.g., "No message provided").
-                                    messages.add(stringAiPrefix + errorServerHttpErrorPrefixStrRes + chatResponse.error)
+                                    messages = stringAiPrefix + errorServerHttpErrorPrefixStrRes + chatResponse.error
                                 } else {
                                     // Backend response was successful but empty/malformed.
-                                    messages.add(stringAiPrefix + errorServerEmptyResponseStrRes)
+                                    messages = stringAiPrefix + errorServerEmptyResponseStrRes
                                 }
                             } else {
                                 // Response body was null, indicating a malformed response from server.
-                                messages.add(stringAiPrefix + errorServerMalformedResponseStrRes)
+                                messages = stringAiPrefix + errorServerMalformedResponseStrRes
                             }
                         } else {
                             // HTTP error (e.g., 404, 500).
-                            messages.add(stringAiPrefix + errorServerHttpErrorPrefixStrRes + "${response.code()} ${response.message()}")
+                            messages = stringAiPrefix + errorServerHttpErrorPrefixStrRes + "${response.code()} ${response.message()}"
                         }
                     } catch (e: Exception) {
                         // Handle network exceptions (e.g., no internet, server unreachable).
-                        messages.remove(thinkingMessage) // Ensure "Thinking..." is removed on error.
+                        // messages.remove(thinkingMessage) // Ensure "Thinking..." is removed on error. // Not needed anymore
                         val errorMessage = when (e) {
                             is UnknownHostException, is ConnectException -> stringAiPrefix + errorServerUnreachableStrRes
                             else -> stringAiPrefix + errorNetworkGenericStrRes + " (${e.message})"
                         }
-                        messages.add(errorMessage)
+                        messages = errorMessage
                         Log.e("ChatScreen", "Network request failed", e)
                     } finally {
                         isNetworkRequestInProgress = false // Re-enable mic button.
@@ -226,17 +224,17 @@ fun ChatScreen(
                 }
             } else {
                 // Speech recognized, but no results (should be rare).
-                messages.add(stringAiPrefix + errorAsrNotRecognizedStrRes)
+                messages = stringAiPrefix + errorAsrNotRecognizedStrRes
             }
         } else {
             // Speech recognition failed or was cancelled by the user.
-            messages.add(stringAiPrefix + errorAsrFailedCancelledStrRes)
+            messages = stringAiPrefix + errorAsrFailedCancelledStrRes
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Display initial prompt if no messages are present.
-        if (messages.isEmpty()) {
+        if (messages == null) {
             Text(
                 text = stringResource(id = R.string.message_initial_prompt),
                 modifier = Modifier
@@ -249,32 +247,21 @@ fun ChatScreen(
                 )
             )
         } else {
-            // Display the conversation history.
-            ScalingLazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = listState,
-                contentPadding = PaddingValues(
-                    top = 20.dp,
-                    bottom = 70.dp,
-                    start = 8.dp,
-                    end = 8.dp
-                ), // Increased bottom padding
-                horizontalAlignment = Alignment.CenterHorizontally
+            // Display the current message.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 50.dp), // Ensure content is above the button
+                contentAlignment = Alignment.Center
             ) {
-                items(messages.size) { index ->
-                    MarkdownTelText(
-                        markdownText = messages[index],
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp), // Padding for each message`
-                    )
-//                    androidx.wear.compose.material.Text(
-//                        text = messages[index],
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(vertical = 4.dp)
-//                    )
-                }
+                MarkdownTelText(
+                    markdownText = messages ?: "",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp), // Padding for the message
+                    // Ensure text is centered if it's short, or starts from top if long
+                    // This is handled by Box contentAlignment and MarkdownTelText's own alignment
+                )
             }
         }
 
@@ -299,7 +286,7 @@ fun ChatScreen(
                     try {
                         speechRecognizerLauncher.launch(intent)
                     } catch (e: Exception) {
-                        messages.add(stringAiPrefix + errorAsrUnavailableStrRes)
+                            messages = stringAiPrefix + errorAsrUnavailableStrRes
                         Log.e("ChatScreen", "Speech recognition not available", e)
                     }
                 },
@@ -434,15 +421,12 @@ fun DefaultPreview() {
     }
 
     WearableAiChatTheme {
-        val listState = rememberScalingLazyListState()
         Scaffold(
-            timeText = { TimeText(modifier = Modifier.scrollAway(listState)) },
-            vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
-            positionIndicator = { PositionIndicator(scalingLazyListState = listState) }
+            timeText = { TimeText() },
+            vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) }
         ) {
             ChatScreen(
-                apiService = mockApiService,
-                listState = listState
+                apiService = mockApiService
             )
         }
     }
