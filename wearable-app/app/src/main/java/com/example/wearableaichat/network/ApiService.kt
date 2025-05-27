@@ -14,7 +14,7 @@ interface ApiService {
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2:5000/" // For Android emulator to reach host's localhost
+    private const val BASE_URL = "http://127.0.0.1:5000/" // For Android emulator to reach host's localhost
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY // Log request and response bodies
