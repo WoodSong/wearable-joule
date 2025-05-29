@@ -5,6 +5,10 @@ app = Flask(__name__)
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
+        # make 1 second delay to simulate processing time
+        import time
+        time.sleep(1)
+        
         data = request.get_json()
         if not data or 'message' not in data:
             return jsonify({"error": "No message provided"}), 400

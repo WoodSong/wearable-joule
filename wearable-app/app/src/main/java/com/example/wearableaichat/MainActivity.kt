@@ -95,7 +95,7 @@ fun ChatScreen(
     // Flag to track if TTS has been successfully initialized.
     var ttsInitialized by remember { mutableStateOf(false) }
 
-    val stringAiPrefix = stringResource(id = R.string.ai_prefix)
+    val stringAiPrefix = ""//stringResource(id = R.string.ai_prefix) // TODO: do not show "AI: " prefix in the chat
     val stringUserPrefix = stringResource(id = R.string.user_prefix)
 
     // Hoist the strings that will be used in the ttsListener

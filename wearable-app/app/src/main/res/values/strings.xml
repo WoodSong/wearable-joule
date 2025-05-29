@@ -6,7 +6,7 @@
     <string name="ai_prefix">AI: </string>
     <string name="user_prefix">User: </string>
 
-    <string name="message_initial_prompt">Tap the mic to start chatting!</string>
+    <string name="message_initial_prompt">Tap the mic to start chatting with Joule!</string>
 
     <!-- ASR (Voice Input) Errors -->
     <string name="error_asr_not_recognized">I didn\'t catch that. Please try again.</string>
