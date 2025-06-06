@@ -1,7 +1,8 @@
+@Suppress("DSL_SCOPE_VIOLATION") // Required for libs access in plugins block
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -39,7 +40,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14" // Ensure compatibility with your Kotlin version
+        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtension.get()
     }
     packaging {
         resources {
@@ -49,44 +50,42 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.compose.ui:ui:1.8.2")
-    implementation("androidx.compose.ui:ui-text:1.8.2")
-    implementation("androidx.compose.material:material:1.8.2") // General Material Design components
-    implementation("androidx.compose.ui:ui-tooling-preview:1.8.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
-    implementation("androidx.activity:activity-compose:1.10.1")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.compose.ui.wear)
+    implementation(libs.androidx.compose.ui.text.wear)
+    implementation(libs.androidx.compose.material.wear.general)
+    implementation(libs.androidx.compose.ui.tooling.preview.wear)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
 
     // Wear Compose specific
-    implementation("androidx.wear.compose:compose-material:1.4.1")
-    implementation("androidx.wear.compose:compose-foundation:1.4.1")
+    implementation(libs.androidx.wear.compose.material)
+    implementation(libs.androidx.wear.compose.foundation)
 
     // For icons if needed (e.g. microphone)
-    implementation("androidx.compose.material:material-icons-core:1.7.8")
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
-
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Other Wear OS libraries
-    implementation("com.google.android.gms:play-services-wearable:19.0.0")
+    implementation(libs.google.play.services.wearable)
 
     // Retrofit & Networking
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+    implementation(libs.squareup.retrofit.core)
+    implementation(libs.squareup.retrofit.converter.gson) // Version will be updated by catalog
+    implementation(libs.squareup.okhttp.logging.interceptor)
+    implementation(libs.jetbrains.kotlinx.coroutines.android)
 
     // Needed for Horologist components if you use them, e.g. Media UI
     // implementation("com.google.android.horologist:horologist-compose-tools:0.5.14")
     // implementation("com.google.android.horologist:horologist-tiles:0.5.14")
     // implementation("com.google.android.horologist:horologist-compose-layout:0.5.14")
 
-
     // Test implementations
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.2")
-    androidTestImplementation("androidx.test.espresso:espresso-intents:3.6.1") // Added for Intent testing
-    debugImplementation("androidx.compose.ui:ui-tooling:1.8.2")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.8.2")
+    testImplementation(libs.test.junit)
+    androidTestImplementation(libs.test.androidx.junit)
+    androidTestImplementation(libs.test.androidx.espresso.core)
+    androidTestImplementation(libs.test.androidx.compose.ui.junit4.wear)
+    androidTestImplementation(libs.test.androidx.espresso.intents)
+    debugImplementation(libs.debug.androidx.compose.ui.tooling.wear)
+    debugImplementation(libs.debug.androidx.compose.ui.test.manifest.wear)
 }

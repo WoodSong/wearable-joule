@@ -17,6 +17,10 @@ dependencyResolutionManagement {
         }
         google()
         mavenCentral()
+        // Repository for Jetpack Compose Compiler
+        maven {
+            url = uri("https://androidx.dev/storage/compose-compiler/repository/")
+        }
     }
 }
 
