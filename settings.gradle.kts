@@ -1,4 +1,3 @@
-// Top-level settings file
 pluginManagement {
     repositories {
         maven {
@@ -7,7 +6,6 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-
     }
 }
 
@@ -19,9 +17,11 @@ dependencyResolutionManagement {
         }
         google()
         mavenCentral()
-
     }
 }
 
-rootProject.name = "WearableAiChat"
-include(":app")
+rootProject.name = "MainProject"
+
+include(":phone-app")
+include(":wearable-app:app") // Correctly refers to the app module within wearable-app
+// backend-service is not a Gradle module, so it won't be included here.
