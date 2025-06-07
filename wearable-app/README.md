@@ -5,11 +5,11 @@ This is an Android Wear OS application that allows users to interact with a back
 ## Features
 
 *   **Voice Input:** Uses Android's built-in speech recognition to capture user messages.
-*   **Conversation Display:** Shows the chat history in a scrollable list.
+*   ~~**Conversation Display:** Shows the chat history in a scrollable list.~~
 *   **Backend Communication:** Sends user messages to a backend service and receives responses.
 *   **Text-to-Speech (TTS):** Reads out the backend's responses aloud.
 *   **User-Friendly Interface:** Includes an initial prompt, thinking state, and error messages.
-*   **Auto-Scrolling:** Automatically scrolls to the latest message.
+*   ~~**Auto-Scrolling:** Automatically scrolls to the latest message.~~
 *   **Mic Button State:** Disables the microphone button during ongoing network requests.
 
 ## Requirements
