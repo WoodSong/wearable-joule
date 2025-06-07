@@ -27,5 +27,5 @@ dependencyResolutionManagement {
 rootProject.name = "MainProject"
 
 include(":phone-app")
-include(":wearable-app:app") // Correctly refers to the app module within wearable-app
+include(":wearable-app") // Correctly refers to the app module within wearable-app
 // backend-service is not a Gradle module, so it won't be included here.

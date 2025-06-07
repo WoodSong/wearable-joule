@@ -8,6 +8,8 @@ plugins {
     alias(libs.plugins.android.application) apply false
     // Apply the Kotlin Android plugin
     alias(libs.plugins.kotlin.android) apply false
+    // Apply the Kotlin Compose plugin
+    alias(libs.plugins.kotlin.compose) apply false
 }
 
 // It's also good practice to define common configurations here.

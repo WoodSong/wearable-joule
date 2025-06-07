@@ -12,8 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
     }
 
     // It's good practice to handle new intents if the activity is already running (singleTop)
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent) // Update the activity's intent
         // If you need to react immediately to this new intent in Compose,
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
         // A full solution might involve a ViewModel or a mutableState passed down
         // that gets updated here, triggering recomposition.
          var newInitialMessage: String? = null
-        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+        if (intent.action == Intent.ACTION_SEND && intent.type == "text/plain") {
             intent.getStringExtra(Intent.EXTRA_TEXT)?.let {
                 newInitialMessage = it
             }
@@ -97,8 +97,11 @@ fun ChatScreen(initialMessage: String? = null) {
     val listState = rememberLazyListState()
 
     // Helper function to send a message (used by button and intent)
-    val sendMessage = { messageText: String ->
-        if (messageText.isBlank()) return@sendMessage
+    val sendMessage = fun(messageText: String) {
+        if (messageText.isBlank()) {
+            //return@sendMessage
+            return
+        }
 
         val userMessage = Message(messageText, true)
         messages.add(userMessage)
@@ -226,7 +229,7 @@ fun MessageInputRow(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Icon(Icons.Filled.Send, contentDescription = "Send")
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send")
             }
         }
         Spacer(modifier = Modifier.width(8.dp))
@@ -250,7 +253,7 @@ fun MessageBubble(message: Message) {
             color = bubbleColor,
             shape = RoundedCornerShape(
                 topStart = if (message.isUserMessage) 16.dp else 4.dp,
-                topEnd = if (message.isUser_message) 4.dp else 16.dp, // Corrected: isUser_message to isUserMessage
+                topEnd = if (message.isUserMessage) 4.dp else 16.dp, // Corrected: isUser_message to isUserMessage
                 bottomStart = 16.dp,
                 bottomEnd = 16.dp
             ),

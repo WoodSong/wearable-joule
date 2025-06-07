@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.phone_app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.phone_app"
@@ -63,6 +63,10 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
+    // For icons if needed (e.g. microphone)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Networking
     implementation(libs.squareup.retrofit.core)
